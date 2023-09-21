@@ -1,24 +1,35 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import {simpleGit, TagResult} from "simple-git";
+import semver from 'semver/preload'
 
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
+const TEMP_PUBLISH_PREFIX = "autoversion-tmp-publishing-"
+
+function findNextVersion(versionBase: string, tags: TagResult) {
+  const versionBaseCompare = `${versionBase}.`
+  const matching = tags.all
+      .map(t => t.startsWith(TEMP_PUBLISH_PREFIX) ? t.substring(TEMP_PUBLISH_PREFIX.length) : t)
+      .filter(t => t.startsWith(versionBaseCompare))
+      .map(t => semver.parse(t))
+      .filter(ver => ver !== null && ver !== undefined)
+
+  const sorted = matching.sort((v1, v2) => v2!.compare(v1!))
+  const nextPatch = sorted.length > 0 ? sorted[0]!.patch + 1 : 0
+  return `${versionBase}.${nextPatch}`;
+}
+
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const versionBase: string = core.getInput('versionBase')
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.debug(`versionBase: ${versionBase}`)
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const git = simpleGit();
+    const tags = await git.tags()
+    const nextVersion = findNextVersion(versionBase, tags);
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    core.debug(`nextVersion: ${nextVersion}`)
+
+    core.setOutput('nextVersion', nextVersion)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

@@ -1,18 +1,15 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Auto-version: Next Version'
+description: 'Uses git tags and a version base to find the next patch version'
+author: 'Kevin Galligan'
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  versionBase:
+    description: 'Base version value. Must be x.y.'
     required: true
-    default: '1000'
 
-# Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  nextVersion:
+    description: 'Next version'
 
 runs:
   using: node20
