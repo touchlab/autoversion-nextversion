@@ -68,7 +68,7 @@
     "@actions/core": "^1.10.1",
     "@octokit/rest": "^20.0.1",
     "semver": "^7.5.4",
-    "simple-git": "^3.19.1",
+    "simple-git": "^3.20.0",
     "tag-cmp": "^1.0.1"
   },
   "devDependencies": {
